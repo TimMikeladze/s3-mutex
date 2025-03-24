@@ -38,12 +38,7 @@
 			"style": {
 				"noDefaultExport": "off",
 				"useFilenamingConvention": "off",
-				"useNamingConvention": {
-					"level": "error",
-					"options": {
-						"strictCase": false
-					}
-				}
+				"useNamingConvention": "off"
 			},
 			"performance": {
 				"noReExportAll": "off",
@@ -51,14 +46,8 @@
 			},
 			"suspicious": {
 				"noReactSpecificProps": "off",
-				"noConsole": {
-					"fix": "none",
-					"level": "warn"
-				},
-				"noConsoleLog": {
-					"fix": "none",
-					"level": "warn"
-				}
+				"noConsole": "off",
+				"noConsoleLog": "off"
 			},
 			"correctness": {
 				"useImportExtensions": "off",
