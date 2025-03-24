@@ -38,12 +38,7 @@
 			"style": {
 				"noDefaultExport": "off",
 				"useFilenamingConvention": "off",
-				"useNamingConvention": {
-					"level": "error",
-					"options": {
-						"strictCase": false
-					}
-				}
+				"useNamingConvention": "off"
 			},
 			"performance": {
 				"noReExportAll": "off",

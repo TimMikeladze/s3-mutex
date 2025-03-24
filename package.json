@@ -10,7 +10,7 @@
 		"url": ""
 	},
 	"scripts": {
-		"dev": "concurrently \"pnpm build --watch\" \"pnpm storybook\" \"pnpm test\" ",
+		"dev": "concurrently \"pnpm build --watch\" \"pnpm test\" ",
 		"build": "tsup",
 		"lint": "biome check --write --unsafe .",
 		"lint:ci": "biome check --unsafe .",
@@ -100,5 +100,9 @@
 			"esbuild",
 			"lefthook"
 		]
+	},
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.772.0",
+		"minio": "^8.0.5"
 	}
 }
