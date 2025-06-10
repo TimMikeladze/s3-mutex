@@ -5,7 +5,8 @@ import {
 	HeadObjectCommand,
 	ListObjectsV2Command,
 	PutObjectCommand,
-	type S3Client,
+	S3Client,
+	type S3ClientConfig,
 } from "@aws-sdk/client-s3";
 
 // src/utils.ts
@@ -64,7 +65,9 @@ export interface S3MutexOptions {
 	/**
 	 * AWS S3 client instance
 	 */
-	s3Client: S3Client;
+	s3Client?: S3Client;
+
+	s3ClientConfig?: S3ClientConfig;
 
 	/**
 	 * S3 bucket name where locks will be stored
@@ -148,7 +151,12 @@ export class S3Mutex {
 	private lockDependencies: Map<string, Set<string>> = new Map();
 
 	constructor(options: S3MutexOptions) {
-		this.s3Client = options.s3Client;
+		this.s3Client =
+			options.s3Client ??
+			new S3Client({
+				forcePathStyle: true,
+				...options.s3ClientConfig,
+			});
 		this.bucketName = options.bucketName;
 		this.keyPrefix = options.keyPrefix || "locks/";
 		this.maxRetries = options.maxRetries || 5;
@@ -313,7 +321,12 @@ export class S3Mutex {
 			const err = error as { $metadata?: { httpStatusCode?: number } };
 			// Enhanced error handling for getLockInfo
 			if (err.$metadata?.httpStatusCode === 404) {
-				throw new Error(`Lock file ${lockName} not found`);
+				// Create a new error but preserve the original metadata for checking in isLocked/isOwnedByUs
+				const notFoundError = new Error(
+					`Lock file ${lockName} not found`,
+				) as Error & { $metadata?: { httpStatusCode?: number } };
+				notFoundError.$metadata = err.$metadata;
+				throw notFoundError;
 			}
 
 			this.handleS3Error(error, "getting info for", lockName);
@@ -945,9 +958,14 @@ export class S3Mutex {
 		try {
 			// Check if the lock is held by us or if we're forcing
 			if (!force) {
-				const isOwnedByUs = await this.isOwnedByUs(lockName);
-				if (!isOwnedByUs) {
-					return false;
+				try {
+					const isOwnedByUs = await this.isOwnedByUs(lockName);
+					if (!isOwnedByUs) {
+						return false;
+					}
+				} catch (error) {
+					// If lock doesn't exist and we're not forcing, still try to delete to be consistent
+					// This will catch the 404 below and return true
 				}
 			}
 
